@@ -6,15 +6,10 @@ import scala.util.Try
 
 object Extra {
 
-  val sbtPluginSettings = ScriptedPlugin.scriptedSettings ++ Seq(
+  val sbtPluginSettings = Seq(
       organization := "org.portable-scala",
-      version := "0.5.1-SNAPSHOT",
+      version := "0.5.1-KH",
       sbtPlugin := true,
-      scriptedLaunchOpts ++= Seq(
-        "-Dplugin.version=" + version.value,
-        "-Dplugin.sn-version=0.3.7",
-        "-Dplugin.sjs-version=0.6.23"
-      ),
       scalacOptions ++= Seq(
         "-deprecation",
         "-unchecked",
@@ -90,34 +85,5 @@ object Extra {
       (target.value / "rootdoc.txt").getPath
     ),
     doc in Compile := (doc in Compile).dependsOn(createRootDoc).value
-  )
-
-  private lazy val duplicateProjectFoldersTask =
-    taskKey[Unit]("Copy project folders in all scripted directories")
-
-  val duplicateProjectFolders = Seq(
-    duplicateProjectFoldersTask := {
-
-      println("duplicating")
-
-      val pluginsFileName         = "plugins.sbt"
-      val buildPropertiesFileName = "build.properties"
-      val project                 = "project"
-
-      val pluginsSbt      = sbtTestDirectory.value / pluginsFileName
-      val buildProperties = (baseDirectory in ThisBuild).value / project / buildPropertiesFileName
-
-      val groups = sbtTestDirectory.value.listFiles.filter(_.isDirectory)
-      val tests =
-        groups.flatMap(_.listFiles).filterNot(_.name == "scala-native-only")
-
-      tests.foreach { test =>
-        val testProjectDir = test / project
-        IO.createDirectory(testProjectDir)
-        IO.copyFile(pluginsSbt, testProjectDir / pluginsFileName)
-        IO.copyFile(buildProperties, testProjectDir / buildPropertiesFileName)
-      }
-    },
-    scripted := scripted.dependsOn(duplicateProjectFoldersTask).evaluated
-  )
+  )  
 }
